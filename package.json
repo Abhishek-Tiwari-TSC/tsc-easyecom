@@ -1,0 +1,17 @@
+{
+  "name": "dashboard",
+  "version": "1.0.0",
+  "description": "| File | Purpose | |------|---------| | `index.html` | Frontend UI | | `style.css` | All styles | | `app.js` | Frontend logic, API calls | | `server.js` | Node.js backend proxy (optional) | | `code.gs` | Google Apps Script for Sheets |",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}

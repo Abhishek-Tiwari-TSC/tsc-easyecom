@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TSC EasyEcom — Order Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<script>
+  if (sessionStorage.getItem('tsc_auth') !== 'true') window.location.href = 'login.html';
+</script>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+    </div>
+    <div class="brand-text">
+      <span class="brand-name">TSC EasyEcom</span>
+      <span class="brand-sub">Order Management</span>
+    </div>
+  </div>
+  <div class="sidebar-section-label">Menu</div>
+  <nav class="sidebar-nav">
+    <a class="nav-link active" href="#" onclick="switchTab('create',this); return false;">
+      <span class="nav-link-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
+      <span class="nav-link-text">Create Order</span>
+      <span class="nav-link-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </a>
+    <a class="nav-link" href="#" onclick="switchTab('edit',this); return false;">
+      <span class="nav-link-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
+      <span class="nav-link-text">View & Edit Orders</span>
+      <span class="nav-link-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </a>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user-card">
+      <div class="user-avatar-sm">AT</div>
+      <div class="user-details">
+        <span class="user-name-sm">Abhishek Tiwari</span>
+        <span class="user-email-sm">D2C · TSC</span>
+      </div>
+      <button class="user-logout" onclick="doLogout()" title="Logout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<div class="main-wrap" id="mainWrap">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-crumb">
+        <span class="crumb-root">TSC EasyEcom</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="crumb-current" id="crumbCurrent">Create Order</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="live-badge"><span class="live-dot"></span><span>Live</span></div>
+      <div class="topbar-divider"></div>
+      <div class="topbar-user">
+        <div class="topbar-avatar">AT</div>
+        <span class="topbar-username">Abhishek Tiwari</span>
+      </div>
+      <button class="topbar-logout" onclick="doLogout()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </button>
+    </div>
+  </header>
+
+  <main class="page-body">
+
+    <!-- CREATE ORDER TAB -->
+    <div class="tab-pane active" id="tab-create">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Create New Order</h1>
+          <p class="page-subtitle">Fill in the details below to push an order to EasyEcom. <span class="req-note"><span class="req-star">*</span> Required fields</span></p>
+        </div>
+      </div>
+
+      <form id="createOrderForm" onsubmit="submitCreateOrder(event)" novalidate>
+
+        <!-- CORE DETAILS -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-head-left">
+              <span class="card-badge badge-required">Required</span>
+              <h2 class="card-title">Core Order Details</h2>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="field-grid col-3">
+
+              <div class="field">
+                <label class="field-label">Marketplace Order ID <span class="req-star">*</span></label>
+                <input type="text" class="field-input" id="orderNumber" placeholder="e.g. PF-2024-001" required>
+                <span class="field-hint">Must be unique per order</span>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Marketplace <span class="req-star">*</span></label>
+                <select class="field-input field-select" id="marketplaceName" required onchange="onMarketplaceChange(this)">
+                  <option value="">Select Marketplace</option>
+                  <option value="Pepperfry">Pepperfry</option>
+                  <option value="TataCliq">TataCliq</option>
+                </select>
+                <input type="hidden" id="orderType" value="retailorder">
+                <input type="hidden" id="marketplaceId" value="">
+              </div>
+
+              <div class="field">
+                <label class="field-label">Invoice Amount <span class="req-star">*</span></label>
+                <div class="field-prefix-wrap">
+                  <span class="field-prefix">Rs.</span>
+                  <input type="number" class="field-input has-prefix" id="invoiceAmount" placeholder="0.00" step="0.01" required style="padding-left:38px;">
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Order Date <span class="req-star">*</span></label>
+                <input type="datetime-local" class="field-input" id="orderDate" required>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- ORDER ITEMS -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-head-left">
+              <span class="card-badge badge-required">Required</span>
+              <h2 class="card-title">Order Items</h2>
+            </div>
+            <button type="button" class="btn-add-item" onclick="addItem()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Item
+            </button>
+          </div>
+          <div class="card-body" id="itemsContainer" style="padding-top:0;"></div>
+        </div>
+
+        <!-- BILLING -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-head-left">
+              <span class="card-badge badge-required">Required</span>
+              <h2 class="card-title">Billing Details</h2>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="field-grid col-3">
+              <div class="field">
+                <label class="field-label">Full Name <span class="req-star">*</span></label>
+                <input type="text" class="field-input" id="billingName" placeholder="Customer full name" required>
+              </div>
+              <div class="field">
+                <label class="field-label">Contact Number <span class="req-star">*</span></label>
+                <input type="tel" class="field-input" id="billingContact" placeholder="10-digit mobile" required>
+              </div>
+              <div class="field">
+                <label class="field-label">Email</label>
+                <input type="email" class="field-input" id="billingEmail" placeholder="customer@email.com">
+              </div>
+              <div class="field col-span-2">
+                <label class="field-label">Address Line 1 <span class="req-star">*</span></label>
+                <input type="text" class="field-input" id="billingAddress1" placeholder="House/Flat No., Building, Street" required>
+              </div>
+              <div class="field">
+                <label class="field-label">Address Line 2</label>
+                <input type="text" class="field-input" id="billingAddress2" placeholder="Locality, Landmark">
+              </div>
+              <div class="field">
+                <label class="field-label">City <span class="req-star">*</span></label>
+                <input type="text" class="field-input" id="billingCity" placeholder="City" required>
+              </div>
+              <div class="field">
+                <label class="field-label">State <span class="req-star">*</span></label>
+                <input type="text" class="field-input" id="billingState" placeholder="State" required>
+              </div>
+              <div class="field">
+                <label class="field-label">PIN Code <span class="req-star">*</span></label>
+                <input type="text" class="field-input" id="billingPostal" placeholder="6-digit PIN" required>
+              </div>
+              <div class="field">
+                <label class="field-label">Country</label>
+                <input type="text" class="field-input" id="billingCountry" value="India">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SHIPPING -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-head-left">
+              <span class="card-badge badge-required">Required</span>
+              <h2 class="card-title">Shipping Details</h2>
+            </div>
+            <button type="button" class="btn-ghost" onclick="copyBilling()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              Same as Billing
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="field-grid col-3">
+              <div class="field">
+                <label class="field-label">Full Name <span class="req-star">*</span></label>
+                <input type="text" class="field-input" id="shippingName" placeholder="Recipient name" required>
+              </div>
+              <div class="field">
+                <label class="field-label">Contact Number <span class="req-star">*</span></label>
+                <input type="tel" class="field-input" id="shippingContact" placeholder="10-digit mobile" required>
+              </div>
+              <div class="field">
+                <label class="field-label">Email</label>
+                <input type="email" class="field-input" id="shippingEmail" placeholder="customer@email.com">
+              </div>
+              <div class="field col-span-2">
+                <label class="field-label">Address Line 1 <span class="req-star">*</span></label>
+                <input type="text" class="field-input" id="shippingAddress1" placeholder="House/Flat No., Building, Street" required>
+              </div>
+              <div class="field">
+                <label class="field-label">Address Line 2</label>
+                <input type="text" class="field-input" id="shippingAddress2" placeholder="Locality, Landmark">
+              </div>
+              <div class="field">
+                <label class="field-label">City <span class="req-star">*</span></label>
+                <input type="text" class="field-input" id="shippingCity" placeholder="City" required>
+              </div>
+              <div class="field">
+                <label class="field-label">State <span class="req-star">*</span></label>
+                <input type="text" class="field-input" id="shippingState" placeholder="State" required>
+              </div>
+              <div class="field">
+                <label class="field-label">PIN Code <span class="req-star">*</span></label>
+                <input type="text" class="field-input" id="shippingPostal" placeholder="6-digit PIN" required>
+              </div>
+              <div class="field">
+                <label class="field-label">Country</label>
+                <input type="text" class="field-input" id="shippingCountry" value="India">
+              </div>
+              <div class="field">
+                <label class="field-label">Latitude</label>
+                <input type="text" class="field-input" id="shippingLat" placeholder="e.g. 12.900222">
+              </div>
+              <div class="field">
+                <label class="field-label">Longitude</label>
+                <input type="text" class="field-input" id="shippingLng" placeholder="e.g. 77.650914">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="form-actions">
+          <button type="button" class="btn-ghost btn-lg" onclick="resetForm()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+            Reset Form
+          </button>
+          <button type="submit" class="btn-primary btn-lg" id="createBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Create Order
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- EDIT ORDER TAB -->
+    <div class="tab-pane" id="tab-edit">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Orders</h1>
+          <p class="page-subtitle">Live orders fetched from EasyEcom. Click any row to view or edit.</p>
+        </div>
+        <div class="page-header-actions">
+          <div class="search-wrap">
+            <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="search-input" id="searchInput" placeholder="Search orders, customers..." oninput="filterOrders(this.value)">
+          </div>
+          <button class="btn-refresh" onclick="loadOrders()" id="refreshBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+      <div class="orders-meta" id="ordersMeta" style="display:none;">
+        <span class="orders-count" id="ordersCount">0 orders</span>
+        <span class="orders-meta-dot">·</span>
+        <span class="orders-meta-text">Fetched from EasyEcom API</span>
+      </div>
+      <div class="table-card">
+        <div class="table-wrap">
+          <table class="data-table" id="ordersTable">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Marketplace</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="ordersBody">
+              <tr><td colspan="8"><div class="table-empty"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><p>Click Refresh to load orders from EasyEcom.</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="app-footer">
+    <span>Product by <strong>Abhishek Tiwari</strong> · D2C</span>
+    <span class="footer-sep">·</span>
+    <span>TSC EasyEcom Order Management</span>
+    <span class="footer-sep">·</span>
+    <span>v2.0</span>
+  </footer>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-backdrop" id="editModal" onclick="handleBackdropClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+        <div>
+          <h3 class="modal-title">Edit Order</h3>
+          <p class="modal-subtitle" id="modalSubtitle">Order #—</p>
+        </div>
+      </div>
+      <button class="modal-close-btn" onclick="closeModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="submitEditOrder()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toastWrap">
+  <div class="toast" id="toast">
+    <div class="toast-icon-wrap" id="toastIconWrap"></div>
+    <div class="toast-content">
+      <div class="toast-title" id="toastTitle"></div>
+      <div class="toast-body" id="toastBody"></div>
+    </div>
+    <button class="toast-close" onclick="hideToast()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="loading-ring"></div>
+    <p>Processing order...</p>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
