@@ -2,7 +2,7 @@
 
 const CONFIG = {
   USE_BACKEND: true,
-  BACKEND_URL: 'http://localhost:3000',
+  BACKEND_URL: 'https://tsc-easyecom-render-1.onrender.com',
   SHEET_URL: 'https://script.google.com/macros/s/AKfycby-tRXUB5f1CJNtU9aBw0jSePFtkFLinQ2pvT2I10cTcTJQuITck_VQH7bUEvxRya1b-A/exec',
 };
 
