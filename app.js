@@ -169,6 +169,7 @@ function buildPayload() {
   var payload = {
     orderType: 'retailorder',
     orderNumber: g('orderNumber'),
+    invoiceAmount: g('invoiceAmount'),  // ← passed to server for WhatsApp message
     orderDate: orderDate,
     paymentMode: 2,            // Always Prepaid
     marketplaceId: mktId,
@@ -238,24 +239,13 @@ async function submitCreateOrder(e) {
       throw new Error(data.message || data.error || ('API Error ' + res.status));
     }
 
-    const queueId = (data.data && data.data.queueId) ? data.data.queueId : '';
-
-    // Save to Google Sheet
-    try {
-      await fetch(CONFIG.SHEET_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'createOrder', data: buildSheetRow(payload, data) }),
-      });
-    } catch (sheetErr) { console.warn('Sheet save failed', sheetErr); }
-
     showLoading(false);
-    showToast('success', 'Order Queued!', 'Order ' + payload.orderNumber + ' accepted.' + (queueId ? ' Queue ID: ' + queueId : ''));
-    setTimeout(function () { resetForm(); }, 2500);
+    showToast('success', 'Approval Sent!', 'WhatsApp sent for order ' + payload.orderNumber + '. Order will be created once approved.');
+    setTimeout(function () { resetForm(); }, 3000);
 
   } catch (err) {
     showLoading(false);
-    showToast('error', 'API Error', err.message || 'Failed to create order.');
+    showToast('error', 'API Error', err.message || 'Failed to send approval request.');
   }
 }
 
@@ -270,7 +260,7 @@ function buildSheetRow(payload, response) {
     orderType: payload.orderType,
     marketplace: g('marketplaceName'),
     marketplaceId: payload.marketplaceId,
-    invoiceAmount: g('invoiceAmount'),
+    invoiceAmount: payload.invoiceAmount,
     orderDate: payload.orderDate,
     paymentMode: payload.paymentMode,
     itemCount: payload.items.length,
