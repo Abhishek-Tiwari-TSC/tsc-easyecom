@@ -52,7 +52,7 @@ app.post('/api/sendOtp', async (req, res) => {
 
   // Message template matching the new Gupshup format
   const message =
-    'Hi ' + name + ',\n\n' +
+    'Hi Ruta,\n\n' +
     'As per your recent request, here are your order details:\n\n' +
     '*Order ID:* ' + orderNumber + '\n\n' +
     '*SKU id:* ' + item + '\n\n' +
@@ -64,7 +64,7 @@ app.post('/api/sendOtp', async (req, res) => {
     'https://mediaapi.smsgupshup.com/GatewayAPI/rest' +
     '?userid='   + GUPSHUP_USERID +
     '&password=' + GUPSHUP_PASSWORD +
-    '&send_to=9819833605' +
+    '&send_to=9730083299' +
     '&v=1.1' +
     '&format=json' +
     '&msg_type=TEXT' +
