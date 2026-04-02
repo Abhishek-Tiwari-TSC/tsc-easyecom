@@ -944,3 +944,238 @@ body {
   .item-grid { grid-template-columns: 1fr; }
   .topbar-user { display: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   API RESPONSE MODAL  —  append these rules to the bottom of style.css
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Modal width override for the response modal */
+.api-resp-modal {
+  max-width: 520px;
+  width: 100%;
+}
+
+/* Icon circle */
+.api-resp-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.api-resp-icon.resp-success { background: #D1FAE5; color: #065F46; }
+.api-resp-icon.resp-error   { background: #FEE2E2; color: #DC2626; }
+
+/* Status title colour */
+.api-resp-status-text.resp-success { color: #065F46; }
+.api-resp-status-text.resp-error   { color: #DC2626; }
+
+/* Short message line under the title */
+.api-resp-message {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 14px 0;
+  line-height: 1.5;
+}
+
+/* Key-value rows (Order ID, Suborder ID, etc.) */
+.resp-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.resp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 14px;
+  background: var(--surface, #F8FAFC);
+  border-radius: 8px;
+  border: 1px solid var(--border, #E2E8F0);
+}
+
+.resp-label {
+  font-size: 12px;
+  color: var(--muted, #64748B);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.resp-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink, #0F172A);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.01em;
+  max-width: 60%;
+  text-align: right;
+  word-break: break-all;
+}
+
+/* Empty state inside rows */
+.resp-empty {
+  font-size: 13px;
+  color: var(--muted, #64748B);
+  margin: 6px 0;
+}
+
+/* Raw JSON pre block */
+.api-resp-raw {
+  background: #0f172a;
+  color: #94a3b8;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  line-height: 1.65;
+  padding: 14px 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  overflow-y: auto;
+  white-space: pre;
+  max-height: 240px;
+  margin: 8px 0 0 0;
+  border: 1px solid #1e293b;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADDITIONS — append to the bottom of style.css
+   Covers: OTP modal + API response modal
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── OTP MODAL ────────────────────────────────────────────────────────────── */
+.otp-modal {
+  max-width: 460px;
+  width: 100%;
+}
+
+.otp-icon {
+  background: #EFF6FF;
+  color: #1D4ED8;
+}
+
+.otp-info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #F0F9FF;
+  border: 1px solid #BAE6FD;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #0369A1;
+  line-height: 1.55;
+  margin-bottom: 20px;
+}
+
+.otp-field-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.otp-input {
+  font-family: 'JetBrains Mono', monospace !important;
+ font-size: 14px !important;
+font-weight: 600 !important;
+letter-spacing: 0.1em !important;
+padding: 0 12px !important;
+border-radius: var(--radius-sm) !important;
+}
+
+.otp-input:focus {
+  border-color: var(--primary, #6366F1) !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12) !important;
+}
+
+.otp-error {
+  font-size: 12px;
+  color: #DC2626;
+  margin-top: 6px;
+  min-height: 18px;
+  font-weight: 500;
+}
+
+/* ── API RESPONSE MODAL ───────────────────────────────────────────────────── */
+.api-resp-modal {
+  max-width: 520px;
+  width: 100%;
+}
+
+.api-resp-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.api-resp-icon.resp-success { background: #D1FAE5; color: #065F46; }
+.api-resp-icon.resp-error   { background: #FEE2E2; color: #DC2626; }
+
+.api-resp-status-text.resp-success { color: #065F46; }
+.api-resp-status-text.resp-error   { color: #DC2626; }
+
+.api-resp-message {
+  font-size: 13px;
+  color: var(--muted, #64748B);
+  margin: 0 0 14px 0;
+  line-height: 1.5;
+}
+
+.resp-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.resp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 14px;
+  background: var(--surface, #F8FAFC);
+  border-radius: 8px;
+  border: 1px solid var(--border, #E2E8F0);
+}
+
+.resp-label {
+  font-size: 12px;
+  color: var(--muted, #64748B);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.resp-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink, #0F172A);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.01em;
+  max-width: 60%;
+  text-align: right;
+  word-break: break-all;
+}
+
+.resp-empty {
+  font-size: 13px;
+  color: var(--muted, #64748B);
+  margin: 6px 0;
+}
+
+.api-resp-raw {
+  background: #0f172a;
+  color: #94a3b8;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  line-height: 1.65;
+  padding: 14px 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  overflow-y: auto;
+  white-space: pre;
+  max-height: 240px;
+  margin: 8px 0 0 0;
+  border: 1px solid #1e293b;
+}
