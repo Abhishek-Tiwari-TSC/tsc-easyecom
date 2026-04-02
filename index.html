@@ -32,7 +32,7 @@
     </a>
     <a class="nav-link" href="#" onclick="switchTab('edit',this); return false;">
       <span class="nav-link-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
-      <span class="nav-link-text">View & Edit Orders</span>
+      <span class="nav-link-text">View &amp; Edit Orders</span>
       <span class="nav-link-arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span>
     </a>
   </nav>
@@ -94,7 +94,6 @@
         <div class="card">
           <div class="card-head">
             <div class="card-head-left">
-              <span class="card-badge badge-required">Required</span>
               <h2 class="card-title">Core Order Details</h2>
             </div>
           </div>
@@ -118,6 +117,19 @@
                 <input type="hidden" id="marketplaceId" value="">
               </div>
 
+              <!-- WAREHOUSE — only shown for Pepperfry -->
+              <div class="field" id="warehouseField" style="display:none;">
+                <label class="field-label">Warehouse <span class="req-star">*</span></label>
+                <select class="field-input field-select" id="warehouseName" onchange="onWarehouseChange(this)">
+                  <option value="">Select Warehouse</option>
+                  <option value="Gurgaon">Gurgaon</option>
+                  <option value="Kolkata">Kolkata</option>
+                  <option value="New Bangalore">New Bangalore</option>
+                  <option value="Bhiwandi">Bhiwandi</option>
+                </select>
+                <span class="field-hint">JWT token auto-selected per warehouse</span>
+              </div>
+
               <div class="field">
                 <label class="field-label">Invoice Amount <span class="req-star">*</span></label>
                 <div class="field-prefix-wrap">
@@ -139,7 +151,6 @@
         <div class="card">
           <div class="card-head">
             <div class="card-head-left">
-              <span class="card-badge badge-required">Required</span>
               <h2 class="card-title">Order Items</h2>
             </div>
             <button type="button" class="btn-add-item" onclick="addItem()">
@@ -154,7 +165,6 @@
         <div class="card">
           <div class="card-head">
             <div class="card-head-left">
-              <span class="card-badge badge-required">Required</span>
               <h2 class="card-title">Billing Details</h2>
             </div>
           </div>
@@ -204,7 +214,6 @@
         <div class="card">
           <div class="card-head">
             <div class="card-head-left">
-              <span class="card-badge badge-required">Required</span>
               <h2 class="card-title">Shipping Details</h2>
             </div>
             <button type="button" class="btn-ghost" onclick="copyBilling()">
@@ -277,7 +286,7 @@
       </form>
     </div>
 
-    <!-- EDIT ORDER TAB -->
+    <!-- VIEW & EDIT ORDERS TAB -->
     <div class="tab-pane" id="tab-edit">
       <div class="page-header">
         <div>
@@ -330,16 +339,63 @@
     <span class="footer-sep">·</span>
     <span>TSC EasyEcom Order Management</span>
     <span class="footer-sep">·</span>
-    <span>v2.0</span>
+    <span>v2.2</span>
   </footer>
 </div>
 
-<!-- EDIT MODAL -->
+<!-- ── OTP VERIFICATION MODAL ─────────────────────────────────────────────── -->
+<div class="modal-backdrop" id="otpModal">
+  <div class="modal otp-modal">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-icon otp-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.12 1.18 2 2 0 012.11 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+        </div>
+        <div>
+          <h3 class="modal-title">WhatsApp Approval Required</h3>
+          <p class="modal-subtitle">Order <span id="otpOrderRef">#—</span></p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="otp-info-box">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.12 1.18 2 2 0 012.11 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
+        <span>An approval code has been sent to your WhatsApp. Enter the <strong>6-digit Reference Code</strong> from the message to place the order.</span>
+      </div>
+
+      <div class="otp-field-wrap">
+        <label class="field-label" style="margin-bottom:8px;">Reference Code <span class="req-star">*</span></label>
+        <input
+          type="text"
+          class="field-input otp-input"
+          id="otpInput"
+          placeholder="Enter reference code"
+          maxlength="6"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          onkeydown="otpKeydown(event)"
+        >
+        <p class="otp-error" id="otpError"></p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeOtpDialog()">Cancel</button>
+      <button class="btn-primary" onclick="confirmOtp()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Confirm &amp; Place Order
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ORDER DETAIL / EDIT MODAL ─────────────────────────────────────────── -->
 <div class="modal-backdrop" id="editModal" onclick="handleBackdropClick(event)">
   <div class="modal">
     <div class="modal-header">
       <div class="modal-header-left">
-        <div class="modal-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+        <div class="modal-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
         <div>
           <h3 class="modal-title">Edit Order</h3>
           <p class="modal-subtitle" id="modalSubtitle">Order #—</p>
@@ -360,13 +416,43 @@
   </div>
 </div>
 
-<!-- TOAST -->
+<!-- ── API RESPONSE MODAL ─────────────────────────────────────────────────── -->
+<div class="modal-backdrop" id="apiRespModal" onclick="if(event.target===this)closeApiRespModal()">
+  <div class="modal api-resp-modal">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="api-resp-icon resp-success" id="apiRespIcon"></div>
+        <div>
+          <h3 class="modal-title api-resp-status-text resp-success" id="apiRespStatusText">Order Created Successfully</h3>
+          <p class="modal-subtitle" id="apiRespOrderNum">Order #—</p>
+        </div>
+      </div>
+      <button class="modal-close-btn" onclick="closeApiRespModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="api-resp-message" id="apiRespMessage"></p>
+      <div class="resp-rows" id="apiRespRows"></div>
+      <p class="modal-section" style="margin-top:18px;">Full API Response</p>
+      <pre class="api-resp-raw" id="apiRespRaw"></pre>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="closeApiRespModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Done
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ──────────────────────────────────────────────────────────────── -->
 <div class="toast-wrap" id="toastWrap">
   <div class="toast" id="toast">
     <div class="toast-icon-wrap" id="toastIconWrap"></div>
     <div class="toast-content">
       <div class="toast-title" id="toastTitle"></div>
-      <div class="toast-body" id="toastBody"></div>
+      <div class="toast-body"  id="toastBody"></div>
     </div>
     <button class="toast-close" onclick="hideToast()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -374,7 +460,7 @@
   </div>
 </div>
 
-<!-- LOADING OVERLAY -->
+<!-- ── LOADING OVERLAY ────────────────────────────────────────────────────── -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-box">
     <div class="loading-ring"></div>
