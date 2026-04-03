@@ -1,34 +1,37 @@
 const express = require('express');
-const cors    = require('cors');
-const path    = require('path');
-const fs      = require('fs');
+const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ── WAREHOUSE JWT TOKENS ──────────────────────────────────────────────────────
 const WAREHOUSE_TOKENS = {
-  'Bhiwandi':      'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2xvYWRiYWxhbmNlci1tLmVhc3llY29tLmlvL2FjY2Vzcy90b2tlbiIsImlhdCI6MTc3NTAzOTA5NywiZXhwIjoxNzgyOTIzMDk3LCJuYmYiOjE3NzUwMzkwOTcsImp0aSI6ImdPWlcxSk5JZU9VaXF1RWoiLCJzdWIiOiIyNDgxNzUiLCJwcnYiOiJhODRkZWY2NGFkMDExNWQ1ZWNjYzFmODg0NWJjZDBlN2ZlNmM0YjYwIiwidXNlcl9pZCI6MjQ4MTc1LCJjb21wYW55X2lkIjoxMDM4MDksInJvbGVfdHlwZV9pZCI6MiwicGlpX2FjY2VzcyI6MSwicGlpX3JlcG9ydF9hY2Nlc3MiOjEsInJvbGVzIjpudWxsLCJjX2lkIjoxNzI0NjQsInVfaWQiOjI0ODE3NSwibG9jYXRpb25fcmVxdWVzdGVkX2ZvciI6MTcyNDY0fQ.5FzmIeP_kS_4WWRs7pMSiO1D6O-zBCrlXLzhlw3Wmh4',
-  'Kolkata':       'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2xvYWRiYWxhbmNlci1tLmVhc3llY29tLmlvL2FjY2Vzcy90b2tlbiIsImlhdCI6MTc3NTE0OTA3NywiZXhwIjoxNzgzMDMzMDc3LCJuYmYiOjE3NzUxNDkwNzcsImp0aSI6IlhIbUI5Q1VSZ05TMDc5ZU8iLCJzdWIiOiIyNDgxNzUiLCJwcnYiOiJhODRkZWY2NGFkMDExNWQ1ZWNjYzFmODg0NWJjZDBlN2ZlNmM0YjYwIiwidXNlcl9pZCI6MjQ4MTc1LCJjb21wYW55X2lkIjoxMDM4MDksInJvbGVfdHlwZV9pZCI6MiwicGlpX2FjY2VzcyI6MSwicGlpX3JlcG9ydF9hY2Nlc3MiOjEsInJvbGVzIjpudWxsLCJjX2lkIjoxODAzOTEsInVfaWQiOjI0ODE3NSwibG9jYXRpb25fcmVxdWVzdGVkX2ZvciI6MTgwMzkxfQ.Q0TYIqye2pa1suFkHuFrsTCjg0TrGEGwYhV065kNzbk',
+  'Bhiwandi': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2xvYWRiYWxhbmNlci1tLmVhc3llY29tLmlvL2FjY2Vzcy90b2tlbiIsImlhdCI6MTc3NTAzOTA5NywiZXhwIjoxNzgyOTIzMDk3LCJuYmYiOjE3NzUwMzkwOTcsImp0aSI6ImdPWlcxSk5JZU9VaXF1RWoiLCJzdWIiOiIyNDgxNzUiLCJwcnYiOiJhODRkZWY2NGFkMDExNWQ1ZWNjYzFmODg0NWJjZDBlN2ZlNmM0YjYwIiwidXNlcl9pZCI6MjQ4MTc1LCJjb21wYW55X2lkIjoxMDM4MDksInJvbGVfdHlwZV9pZCI6MiwicGlpX2FjY2VzcyI6MSwicGlpX3JlcG9ydF9hY2Nlc3MiOjEsInJvbGVzIjpudWxsLCJjX2lkIjoxNzI0NjQsInVfaWQiOjI0ODE3NSwibG9jYXRpb25fcmVxdWVzdGVkX2ZvciI6MTcyNDY0fQ.5FzmIeP_kS_4WWRs7pMSiO1D6O-zBCrlXLzhlw3Wmh4',
+  'Kolkata': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2xvYWRiYWxhbmNlci1tLmVhc3llY29tLmlvL2FjY2Vzcy90b2tlbiIsImlhdCI6MTc3NTE0OTA3NywiZXhwIjoxNzgzMDMzMDc3LCJuYmYiOjE3NzUxNDkwNzcsImp0aSI6IlhIbUI5Q1VSZ05TMDc5ZU8iLCJzdWIiOiIyNDgxNzUiLCJwcnYiOiJhODRkZWY2NGFkMDExNWQ1ZWNjYzFmODg0NWJjZDBlN2ZlNmM0YjYwIiwidXNlcl9pZCI6MjQ4MTc1LCJjb21wYW55X2lkIjoxMDM4MDksInJvbGVfdHlwZV9pZCI6MiwicGlpX2FjY2VzcyI6MSwicGlpX3JlcG9ydF9hY2Nlc3MiOjEsInJvbGVzIjpudWxsLCJjX2lkIjoxODAzOTEsInVfaWQiOjI0ODE3NSwibG9jYXRpb25fcmVxdWVzdGVkX2ZvciI6MTgwMzkxfQ.Q0TYIqye2pa1suFkHuFrsTCjg0TrGEGwYhV065kNzbk',
   'New Bangalore': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2xvYWRiYWxhbmNlci1tLmVhc3llY29tLmlvL2FjY2Vzcy90b2tlbiIsImlhdCI6MTc3NTE0OTEzNSwiZXhwIjoxNzgzMDMzMTM1LCJuYmYiOjE3NzUxNDkxMzUsImp0aSI6IlB2Z1YwQ3JId3NMV3dYdHkiLCJzdWIiOiIyNDgxNzUiLCJwcnYiOiJhODRkZWY2NGFkMDExNWQ1ZWNjYzFmODg0NWJjZDBlN2ZlNmM0YjYwIiwidXNlcl9pZCI6MjQ4MTc1LCJjb21wYW55X2lkIjoxMDM4MDksInJvbGVfdHlwZV9pZCI6MiwicGlpX2FjY2VzcyI6MSwicGlpX3JlcG9ydF9hY2Nlc3MiOjEsInJvbGVzIjpudWxsLCJjX2lkIjoyNDM4NjUsInVfaWQiOjI0ODE3NSwibG9jYXRpb25fcmVxdWVzdGVkX2ZvciI6MjQzODY1fQ.VBHJzjXLw5XMY1qyM1m9ov1k8NgGMY4SKmmZASk88ok',
-  'Gurgaon':       'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2xvYWRiYWxhbmNlci1tLmVhc3llY29tLmlvL2FjY2Vzcy90b2tlbiIsImlhdCI6MTc3NTE0OTE4NiwiZXhwIjoxNzgzMDMzMTg2LCJuYmYiOjE3NzUxNDkxODYsImp0aSI6ImlYdk9tR0J3bnBJQUp6MDciLCJzdWIiOiIyNDgxNzUiLCJwcnYiOiJhODRkZWY2NGFkMDExNWQ1ZWNjYzFmODg0NWJjZDBlN2ZlNmM0YjYwIiwidXNlcl9pZCI6MjQ4MTc1LCJjb21wYW55X2lkIjoxMDM4MDksInJvbGVfdHlwZV9pZCI6MiwicGlpX2FjY2VzcyI6MSwicGlpX3JlcG9ydF9hY2Nlc3MiOjEsInJvbGVzIjpudWxsLCJjX2lkIjoxNzI0NjYsInVfaWQiOjI0ODE3NSwibG9jYXRpb25fcmVxdWVzdGVkX2ZvciI6MTcyNDY2fQ.9JSaMYqWSl8u5zqVf1nVxQaWW3qjxx9CFWsmJvUsQh8',
+  'Gurgaon': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2xvYWRiYWxhbmNlci1tLmVhc3llY29tLmlvL2FjY2Vzcy90b2tlbiIsImlhdCI6MTc3NTE0OTE4NiwiZXhwIjoxNzgzMDMzMTg2LCJuYmYiOjE3NzUxNDkxODYsImp0aSI6ImlYdk9tR0J3bnBJQUp6MDciLCJzdWIiOiIyNDgxNzUiLCJwcnYiOiJhODRkZWY2NGFkMDExNWQ1ZWNjYzFmODg0NWJjZDBlN2ZlNmM0YjYwIiwidXNlcl9pZCI6MjQ4MTc1LCJjb21wYW55X2lkIjoxMDM4MDksInJvbGVfdHlwZV9pZCI6MiwicGlpX2FjY2VzcyI6MSwicGlpX3JlcG9ydF9hY2Nlc3MiOjEsInJvbGVzIjpudWxsLCJjX2lkIjoxNzI0NjYsInVfaWQiOjI0ODE3NSwibG9jYXRpb25fcmVxdWVzdGVkX2ZvciI6MTcyNDY2fQ.9JSaMYqWSl8u5zqVf1nVxQaWW3qjxx9CFWsmJvUsQh8',
 };
 
-const DEFAULT_JWT      = process.env.EASYECOM_JWT     || WAREHOUSE_TOKENS['Bhiwandi'];
+const DEFAULT_JWT = process.env.EASYECOM_JWT || WAREHOUSE_TOKENS['Bhiwandi'];
 const EASYECOM_API_KEY = process.env.EASYECOM_API_KEY || '9150cbbea336c87bfcc5d1aa435957c424762b8d';
-const GUPSHUP_USERID   = '2000197692';
+const GUPSHUP_USERID = '2000197692';
 const GUPSHUP_PASSWORD = '9LzraftQ';
 
+// Allowed approver numbers — only these will be accepted as send_to targets
+const APPROVER_NUMBERS = ['9730083299', '9619390710', '9819833605'];
+
 const EASYECOM_WEBHOOK = 'https://api.easyecom.io/webhook/v2';
-const EASYECOM_ORDERS  = 'https://api.easyecom.io/orders/V2';
+const EASYECOM_ORDERS = 'https://api.easyecom.io/orders/V2';
 
 function easyecomHeaders(warehouse) {
   const jwt = (warehouse && WAREHOUSE_TOKENS[warehouse]) ? WAREHOUSE_TOKENS[warehouse] : DEFAULT_JWT;
   return {
-    'Content-Type':  'application/json',
+    'Content-Type': 'application/json',
     'Authorization': 'Bearer ' + jwt,
-    'x-api-key':     EASYECOM_API_KEY,
+    'x-api-key': EASYECOM_API_KEY,
   };
 }
 
@@ -41,18 +44,24 @@ app.get('/health', (req, res) => {
 });
 
 // ── SEND OTP VIA WHATSAPP ─────────────────────────────────────────────────────
-// Sends the order details + 6-digit OTP to 9819833605 via Gupshup TEXT API.
-// Body: { name, orderNumber, item, amount, otp }
+// Body: { name, orderNumber, item, amount, otp, sendTo }
+// sendTo must be one of the whitelisted APPROVER_NUMBERS.
+// The approver's first name from the message uses the `name` field passed in.
 app.post('/api/sendOtp', async (req, res) => {
-  const { name, orderNumber, item, amount, otp } = req.body;
+  const { name, orderNumber, item, amount, otp, sendTo } = req.body;
 
-  if (!name || !orderNumber || !item || !amount || !otp) {
-    return res.status(400).json({ success: false, message: 'Missing required fields: name, orderNumber, item, amount, otp.' });
+  if (!name || !orderNumber || !item || !amount || !otp || !sendTo) {
+    return res.status(400).json({ success: false, message: 'Missing required fields: name, orderNumber, item, amount, otp, sendTo.' });
   }
 
-  // Message template matching the new Gupshup format
+  // Whitelist check — only send to known approver numbers
+  if (!APPROVER_NUMBERS.includes(String(sendTo))) {
+    return res.status(400).json({ success: false, message: 'Invalid sendTo number.' });
+  }
+
+  // Exact template message — only variables substituted, structure unchanged
   const message =
-    'Hi Ruta,\n\n' +
+    'Hi ' + name + ',\n\n' +
     'As per your recent request, here are your order details:\n\n' +
     '*Order ID:* ' + orderNumber + '\n\n' +
     '*SKU id:* ' + item + '\n\n' +
@@ -62,20 +71,20 @@ app.post('/api/sendOtp', async (req, res) => {
 
   const url =
     'https://mediaapi.smsgupshup.com/GatewayAPI/rest' +
-    '?userid='   + GUPSHUP_USERID +
+    '?userid=' + GUPSHUP_USERID +
     '&password=' + GUPSHUP_PASSWORD +
-    '&send_to=9730083299' +
+    '&send_to=' + sendTo +
     '&v=1.1' +
     '&format=json' +
     '&msg_type=TEXT' +
     '&method=SENDMESSAGE' +
-    '&msg='      + encodeURIComponent(message);
+    '&msg=' + encodeURIComponent(message);
 
-  console.log('[' + new Date().toISOString() + '] SEND OTP -> order: ' + orderNumber + ' | otp: ' + otp);
+  console.log('[' + new Date().toISOString() + '] SEND OTP -> order: ' + orderNumber + ' | otp: ' + otp + ' | to: ' + sendTo + ' (' + name + ')');
 
   try {
     const response = await fetch(url, { method: 'GET' });
-    const text     = await response.text();
+    const text = await response.text();
     let data;
     try { data = JSON.parse(text); } catch (_) { data = { raw: text }; }
 
@@ -104,15 +113,15 @@ app.post('/api/createOrder', async (req, res) => {
   }
 
   try {
-    const url     = EASYECOM_WEBHOOK + '/createOrder';
+    const url = EASYECOM_WEBHOOK + '/createOrder';
     const headers = easyecomHeaders(warehouse);
     console.log('[' + new Date().toISOString() + '] Using JWT for: ' + (warehouse || 'default'));
     console.log('[' + new Date().toISOString() + '] Payload: ' + JSON.stringify(payload));
 
     const response = await fetch(url, {
-      method:  'POST',
+      method: 'POST',
       headers: headers,
-      body:    JSON.stringify(payload),
+      body: JSON.stringify(payload),
     });
 
     const text = await response.text();
@@ -124,7 +133,7 @@ app.post('/api/createOrder', async (req, res) => {
       return res.status(502).json({
         success: false,
         message: 'EasyEcom returned non-JSON (status ' + response.status + ').',
-        raw:     text.slice(0, 300),
+        raw: text.slice(0, 300),
       });
     }
 
@@ -142,11 +151,11 @@ app.get('/api/getAllOrders', async (req, res) => {
   console.log('[' + new Date().toISOString() + '] GET ALL ORDERS - all pages');
   try {
     let allOrders = [];
-    let page      = 1;
+    let page = 1;
     const perPage = 50;
 
     while (true) {
-      const url      = EASYECOM_ORDERS + '/getAllOrders?page=' + page + '&per_page=' + perPage;
+      const url = EASYECOM_ORDERS + '/getAllOrders?page=' + page + '&per_page=' + perPage;
       const response = await fetch(url, { method: 'GET', headers: easyecomHeaders() });
 
       const text = await response.text();
@@ -183,12 +192,12 @@ app.put('/api/editOrder/:orderNumber', async (req, res) => {
 
 // ── LOCAL ORDER STORE ─────────────────────────────────────────────────────────
 const ORDERS_FILE = path.join(__dirname, 'orders_store.json');
-function readOrders()        { try { return JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8')); } catch (e) { return []; } }
+function readOrders() { try { return JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8')); } catch (e) { return []; } }
 function writeOrders(orders) { fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2)); }
 
 app.post('/api/orders', (req, res) => {
   try {
-    const orders   = readOrders();
+    const orders = readOrders();
     const newOrder = Object.assign({}, req.body, { _id: Date.now().toString(), savedAt: new Date().toISOString() });
     orders.unshift(newOrder);
     writeOrders(orders.slice(0, 1000));

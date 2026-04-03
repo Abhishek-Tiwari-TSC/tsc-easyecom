@@ -339,52 +339,128 @@
     <span class="footer-sep">·</span>
     <span>TSC EasyEcom Order Management</span>
     <span class="footer-sep">·</span>
-    <span>v2.2</span>
+    <span>v2.3</span>
   </footer>
 </div>
 
-<!-- ── OTP VERIFICATION MODAL ─────────────────────────────────────────────── -->
+<!-- ══════════════════════════════════════════════════════════════════════════
+     OTP / APPROVAL MODAL
+     Two-step flow:
+       Step 1 — Select approver → click "Send Code" → WhatsApp is triggered
+       Step 2 — Enter the 6-digit code received → click "Confirm & Place Order"
+     ══════════════════════════════════════════════════════════════════════════ -->
 <div class="modal-backdrop" id="otpModal">
   <div class="modal otp-modal">
+
     <div class="modal-header">
       <div class="modal-header-left">
         <div class="modal-icon otp-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.12 1.18 2 2 0 012.11 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
         </div>
         <div>
-          <h3 class="modal-title">WhatsApp Approval Required</h3>
+          <h3 class="modal-title">WhatsApp Approval</h3>
           <p class="modal-subtitle">Order <span id="otpOrderRef">#—</span></p>
         </div>
       </div>
+      <button class="modal-close-btn" onclick="closeOtpDialog()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
+
     <div class="modal-body">
-      <div class="otp-info-box">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.12 1.18 2 2 0 012.11 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg>
-        <span>An approval code has been sent to your WhatsApp. Enter the <strong>6-digit Reference Code</strong> from the message to place the order.</span>
+
+      <!-- ── STEP 1: Approver selection ── -->
+      <div class="otp-step-label">
+        <span class="otp-step-badge">1</span>
+        <span>Select who should approve this order</span>
       </div>
 
-      <div class="otp-field-wrap">
-        <label class="field-label" style="margin-bottom:8px;">Reference Code <span class="req-star">*</span></label>
-        <input
-          type="text"
-          class="field-input otp-input"
-          id="otpInput"
-          placeholder="Enter reference code"
-          maxlength="6"
-          inputmode="numeric"
-          autocomplete="one-time-code"
-          onkeydown="otpKeydown(event)"
-        >
-        <p class="otp-error" id="otpError"></p>
+      <div class="otp-approver-grid">
+        <!-- Radio-button style approver cards -->
+        <label class="approver-card" for="approver-0">
+          <input type="radio" name="otpApprover" id="approver-0" value="0" class="approver-radio" onchange="document.getElementById('otpApprover').value=this.value">
+          <div class="approver-avatar">R</div>
+          <div class="approver-info">
+            <span class="approver-name">Ruta</span>
+            <span class="approver-num">+91 97300 83299</span>
+          </div>
+          <div class="approver-check">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </label>
+
+        <label class="approver-card" for="approver-1">
+          <input type="radio" name="otpApprover" id="approver-1" value="1" class="approver-radio" onchange="document.getElementById('otpApprover').value=this.value">
+          <div class="approver-avatar">N</div>
+          <div class="approver-info">
+            <span class="approver-name">Nirav</span>
+            <span class="approver-num">+91 96193 90710</span>
+          </div>
+          <div class="approver-check">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </label>
+
+        <label class="approver-card" for="approver-2">
+          <input type="radio" name="otpApprover" id="approver-2" value="2" class="approver-radio" onchange="document.getElementById('otpApprover').value=this.value">
+          <div class="approver-avatar">A</div>
+          <div class="approver-info">
+            <span class="approver-name">Abhishek</span>
+            <span class="approver-num">+91 98198 33605</span>
+          </div>
+          <div class="approver-check">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </label>
       </div>
-    </div>
+
+      <!-- Hidden input used by JS to read selected index -->
+      <input type="hidden" id="otpApprover" value="">
+
+      <p class="otp-send-error" id="otpSendError"></p>
+
+      <button class="btn-primary otp-send-btn" id="otpSendBtn" onclick="sendOtpCode()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Send Code on WhatsApp
+      </button>
+
+      <!-- ── STEP 2: Code entry — hidden until code is sent ── -->
+      <div id="otpCodeSection" style="display:none;">
+
+        <div class="otp-divider"></div>
+
+        <div class="otp-step-label" style="margin-top:0;">
+          <span class="otp-step-badge">2</span>
+          <span>Enter the code sent to <strong id="otpSentTo">—</strong></span>
+        </div>
+
+        <div class="otp-field-wrap">
+          <label class="field-label" style="margin-bottom:8px;">Reference Code <span class="req-star">*</span></label>
+          <input
+            type="text"
+            class="field-input otp-input"
+            id="otpInput"
+            placeholder="_ _ _ _ _ _"
+            maxlength="6"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            onkeydown="otpKeydown(event)"
+          >
+          <p class="otp-error" id="otpError"></p>
+        </div>
+
+      </div>
+
+    </div><!-- /modal-body -->
+
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeOtpDialog()">Cancel</button>
-      <button class="btn-primary" onclick="confirmOtp()">
+      <button class="btn-primary" id="otpConfirmBtn" onclick="confirmOtp()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
         Confirm &amp; Place Order
       </button>
     </div>
+
   </div>
 </div>
 
