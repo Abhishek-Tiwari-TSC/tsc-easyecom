@@ -241,7 +241,7 @@ function buildPayload() {
     orderNumber: orderNumber,
     invoiceAmount: g('invoiceAmount'),  // server strips before EasyEcom call
     orderDate: orderDate,
-    paymentMode: 1,                  // Always Prepaid (1 = Online/Prepaid in EasyEcom)
+    paymentMode: 5,                  // Always Prepaid (1 = Online/Prepaid in EasyEcom)
     marketplaceId: mktId,
     items: items,
     customer: [customerObj],
