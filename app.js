@@ -14,7 +14,7 @@ const MARKETPLACE_MAP = {
   'TataCliq': { id: 948 },
 };
 
-// Approvers — name shown in dropdown, number sent to Gupshup
+// Approvers — name shown in cards, number sent to Gupshup
 const APPROVERS = [
   { name: 'Ruta', number: '9730083299' },
   { name: 'Nirav', number: '9619390710' },
@@ -173,6 +173,8 @@ function _resetFormFields() {
 }
 
 // ── BUILD PAYLOAD ─────────────────────────────────────────────────────────────
+// paymentMode is always 1 (Prepaid/Online) as per EasyEcom API.
+// gst_number is optional — only included when filled in.
 function buildPayload() {
   var g = function (id) {
     var el = document.getElementById(id);
@@ -201,41 +203,48 @@ function buildPayload() {
 
   var mktId = parseInt(g('marketplaceId')) || 0;
   var warehouse = g('warehouseName');
+  var gstNumber = g('gstNumber');
+
+  // Build customer object — gst_number only added when provided
+  var customerObj = {
+    billing: {
+      name: g('billingName'),
+      addressLine1: g('billingAddress1'),
+      addressLine2: g('billingAddress2'),
+      postalCode: g('billingPostal'),
+      city: g('billingCity'),
+      state: g('billingState'),
+      country: g('billingCountry') || 'India',
+      contact: g('billingContact'),
+      email: g('billingEmail'),
+    },
+    shipping: {
+      name: g('shippingName'),
+      addressLine1: g('shippingAddress1'),
+      addressLine2: g('shippingAddress2'),
+      postalCode: g('shippingPostal'),
+      city: g('shippingCity'),
+      state: g('shippingState'),
+      country: g('shippingCountry') || 'India',
+      contact: g('shippingContact'),
+      email: g('shippingEmail'),
+      latitude: g('shippingLat') || undefined,
+      longitude: g('shippingLng') || undefined,
+    },
+  };
+
+  // Only attach gst_number if user filled it in
+  if (gstNumber) customerObj.gst_number = gstNumber;
 
   var payload = {
     orderType: 'retailorder',
     orderNumber: orderNumber,
     invoiceAmount: g('invoiceAmount'),  // server strips before EasyEcom call
     orderDate: orderDate,
-    paymentMode: 1,
+    paymentMode: 1,                  // Always Prepaid (1 = Online/Prepaid in EasyEcom)
     marketplaceId: mktId,
     items: items,
-    customer: [{
-      billing: {
-        name: g('billingName'),
-        addressLine1: g('billingAddress1'),
-        addressLine2: g('billingAddress2'),
-        postalCode: g('billingPostal'),
-        city: g('billingCity'),
-        state: g('billingState'),
-        country: g('billingCountry') || 'India',
-        contact: g('billingContact'),
-        email: g('billingEmail'),
-      },
-      shipping: {
-        name: g('shippingName'),
-        addressLine1: g('shippingAddress1'),
-        addressLine2: g('shippingAddress2'),
-        postalCode: g('shippingPostal'),
-        city: g('shippingCity'),
-        state: g('shippingState'),
-        country: g('shippingCountry') || 'India',
-        contact: g('shippingContact'),
-        email: g('shippingEmail'),
-        latitude: g('shippingLat') || undefined,
-        longitude: g('shippingLng') || undefined,
-      },
-    }],
+    customer: [customerObj],
   };
 
   if (warehouse) payload.warehouse = warehouse;
@@ -262,13 +271,10 @@ function clearOtp() {
 }
 
 // ── SUBMIT CREATE ORDER ───────────────────────────────────────────────────────
-// Validates form then shows the OTP modal (approver selection + code entry).
-// Actual WhatsApp send happens when user clicks "Send Code" inside the modal.
 async function submitCreateOrder(e) {
   e.preventDefault();
   var payload = buildPayload();
 
-  // ── Validation ──
   if (!payload.orderNumber) {
     showToast('error', 'Validation Error', 'Marketplace Order ID is required.');
     return;
@@ -292,7 +298,6 @@ async function submitCreateOrder(e) {
     if (!item.Price) { showToast('error', 'Validation Error', 'Item ' + (i + 1) + ': Price is required.'); return; }
   }
 
-  // Store payload and open the OTP modal (approver selection step)
   _pendingPayload = payload;
   showOtpDialog(payload.orderNumber);
 }
@@ -300,12 +305,20 @@ async function submitCreateOrder(e) {
 // ── OTP DIALOG ────────────────────────────────────────────────────────────────
 function showOtpDialog(orderNumber) {
   document.getElementById('otpOrderRef').textContent = orderNumber;
-  document.getElementById('otpApprover').value = '';       // reset dropdown
+  document.getElementById('otpApprover').value = '';
   document.getElementById('otpInput').value = '';
   document.getElementById('otpError').textContent = '';
   document.getElementById('otpSendError').textContent = '';
-  document.getElementById('otpCodeSection').style.display = 'none'; // hide code input until sent
-  document.getElementById('otpSendBtn').disabled = false;
+  document.getElementById('otpCodeSection').style.display = 'none';
+
+  var sendBtn = document.getElementById('otpSendBtn');
+  sendBtn.disabled = false;
+  sendBtn.textContent = 'Send Code on WhatsApp';
+  sendBtn.style.background = '';
+
+  // Reset radio buttons
+  document.querySelectorAll('.approver-radio').forEach(function (r) { r.checked = false; });
+
   document.getElementById('otpModal').classList.add('open');
 }
 
@@ -319,10 +332,9 @@ function otpKeydown(e) {
   if (e.key === 'Enter') confirmOtp();
 }
 
-// ── SEND CODE — triggered by "Send Code" button inside the modal ──────────────
+// ── SEND CODE ─────────────────────────────────────────────────────────────────
 async function sendOtpCode() {
-  var approverSel = document.getElementById('otpApprover');
-  var selectedIdx = approverSel.value;
+  var selectedIdx = document.getElementById('otpApprover').value;
 
   document.getElementById('otpSendError').textContent = '';
 
@@ -349,7 +361,6 @@ async function sendOtpCode() {
   var itemSummary = payload.items.map(function (it) { return it.Sku + ' x' + it.Quantity; }).join(', ');
   var amountDisplay = payload.invoiceAmount ? 'Rs. ' + parseFloat(payload.invoiceAmount).toLocaleString('en-IN') : 'N/A';
 
-  // Disable send button while request is in-flight
   var sendBtn = document.getElementById('otpSendBtn');
   sendBtn.disabled = true;
   sendBtn.textContent = 'Sending...';
@@ -373,7 +384,6 @@ async function sendOtpCode() {
       throw new Error(otpData.message || 'Failed to send code via WhatsApp.');
     }
 
-    // Show success state and reveal the code input section
     sendBtn.textContent = '✓ Code Sent';
     sendBtn.style.background = '#065F46';
 
@@ -384,7 +394,7 @@ async function sendOtpCode() {
   } catch (err) {
     clearOtp();
     sendBtn.disabled = false;
-    sendBtn.textContent = 'Send Code';
+    sendBtn.textContent = 'Send Code on WhatsApp';
     sendBtn.style.background = '';
     document.getElementById('otpSendError').textContent = err.message;
   }
@@ -412,7 +422,6 @@ async function confirmOtp() {
     return;
   }
 
-  // OTP matched — close modal and place the order
   document.getElementById('otpModal').classList.remove('open');
   clearOtp();
 
@@ -442,7 +451,6 @@ async function confirmOtp() {
       throw new Error(data.message || data.error || ('API Error ' + res.status));
     }
 
-    // Save to Google Sheet
     try {
       await fetch(CONFIG.SHEET_URL, {
         method: 'POST',
@@ -517,6 +525,7 @@ function buildSheetRow(payload, response) {
     invoiceAmount: payload.invoiceAmount,
     orderDate: payload.orderDate,
     paymentMode: payload.paymentMode,
+    gstNumber: (payload.customer[0] || {}).gst_number || '',
     itemCount: payload.items.length,
     itemsSummary: payload.items.map(function (i) { return i.Sku + 'x' + i.Quantity; }).join(' | '),
     billingName: b.name, billingContact: b.contact, billingEmail: b.email || '',
@@ -570,7 +579,7 @@ function renderOrders(orders) {
   }
 
   function pmChip(m) {
-    var map = { COD: ['chip-cod', 'COD'], PrePaid: ['chip-prepaid', 'Prepaid'], Prepaid: ['chip-prepaid', 'Prepaid'] };
+    var map = { COD: ['chip-cod', 'COD'], PrePaid: ['chip-prepaid', 'Prepaid'], Prepaid: ['chip-prepaid', 'Prepaid'], Online: ['chip-prepaid', 'Prepaid'] };
     var r = map[m] || ['chip-online', m || '-'];
     return '<span class="payment-chip ' + r[0] + '">' + r[1] + '</span>';
   }

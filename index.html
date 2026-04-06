@@ -182,6 +182,14 @@
                 <label class="field-label">Email</label>
                 <input type="email" class="field-input" id="billingEmail" placeholder="customer@email.com">
               </div>
+
+              <!-- GST NUMBER — optional, passed as customer.gst_number -->
+              <div class="field">
+                <label class="field-label">GST Number</label>
+                <input type="text" class="field-input" id="gstNumber" placeholder="e.g. 27AAPFU0939F1ZV" maxlength="15" style="text-transform:uppercase;">
+                <span class="field-hint">Optional — included in customer object if provided</span>
+              </div>
+
               <div class="field col-span-2">
                 <label class="field-label">Address Line 1 <span class="req-star">*</span></label>
                 <input type="text" class="field-input" id="billingAddress1" placeholder="House/Flat No., Building, Street" required>
@@ -339,15 +347,14 @@
     <span class="footer-sep">·</span>
     <span>TSC EasyEcom Order Management</span>
     <span class="footer-sep">·</span>
-    <span>v2.3</span>
+    <span>v2.4</span>
   </footer>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════════════════
      OTP / APPROVAL MODAL
-     Two-step flow:
-       Step 1 — Select approver → click "Send Code" → WhatsApp is triggered
-       Step 2 — Enter the 6-digit code received → click "Confirm & Place Order"
+     Step 1 — Select approver → Send Code → WhatsApp triggered
+     Step 2 — Enter 6-digit code → Confirm & Place Order
      ══════════════════════════════════════════════════════════════════════════ -->
 <div class="modal-backdrop" id="otpModal">
   <div class="modal otp-modal">
@@ -369,14 +376,13 @@
 
     <div class="modal-body">
 
-      <!-- ── STEP 1: Approver selection ── -->
+      <!-- STEP 1 -->
       <div class="otp-step-label">
         <span class="otp-step-badge">1</span>
         <span>Select who should approve this order</span>
       </div>
 
       <div class="otp-approver-grid">
-        <!-- Radio-button style approver cards -->
         <label class="approver-card" for="approver-0">
           <input type="radio" name="otpApprover" id="approver-0" value="0" class="approver-radio" onchange="document.getElementById('otpApprover').value=this.value">
           <div class="approver-avatar">R</div>
@@ -414,9 +420,7 @@
         </label>
       </div>
 
-      <!-- Hidden input used by JS to read selected index -->
       <input type="hidden" id="otpApprover" value="">
-
       <p class="otp-send-error" id="otpSendError"></p>
 
       <button class="btn-primary otp-send-btn" id="otpSendBtn" onclick="sendOtpCode()">
@@ -424,16 +428,13 @@
         Send Code on WhatsApp
       </button>
 
-      <!-- ── STEP 2: Code entry — hidden until code is sent ── -->
+      <!-- STEP 2 — hidden until code sent -->
       <div id="otpCodeSection" style="display:none;">
-
         <div class="otp-divider"></div>
-
         <div class="otp-step-label" style="margin-top:0;">
           <span class="otp-step-badge">2</span>
           <span>Enter the code sent to <strong id="otpSentTo">—</strong></span>
         </div>
-
         <div class="otp-field-wrap">
           <label class="field-label" style="margin-bottom:8px;">Reference Code <span class="req-star">*</span></label>
           <input
@@ -448,10 +449,9 @@
           >
           <p class="otp-error" id="otpError"></p>
         </div>
-
       </div>
 
-    </div><!-- /modal-body -->
+    </div>
 
     <div class="modal-footer">
       <button class="btn-ghost" onclick="closeOtpDialog()">Cancel</button>
