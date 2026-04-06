@@ -207,7 +207,7 @@ function buildPayload() {
     orderNumber: orderNumber,
     invoiceAmount: g('invoiceAmount'),  // server strips before EasyEcom call
     orderDate: orderDate,
-    paymentMode: 2,
+    paymentMode: 1,
     marketplaceId: mktId,
     items: items,
     customer: [{
