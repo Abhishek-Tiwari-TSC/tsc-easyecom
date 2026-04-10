@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TSC EasyEcom — Order Management</title>
+<link rel="icon" type="image/png" href="squares.png">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -16,7 +17,7 @@
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="brand-icon">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+      <img src="squares.png" alt="TSC Logo" style="width:20px;height:20px;object-fit:contain;display:block;">
     </div>
     <div class="brand-text">
       <span class="brand-name">TSC EasyEcom</span>
@@ -127,6 +128,7 @@
                   <option value="New Bangalore">New Bangalore</option>
                   <option value="Bhiwandi">Bhiwandi</option>
                 </select>
+                <span class="field-hint">JWT token auto-selected per warehouse</span>
               </div>
 
               <div class="field">
@@ -147,6 +149,9 @@
         </div>
 
         <!-- ORDER ITEMS -->
+        <!-- Product Name field is injected here dynamically by addItem() in app.js -->
+        <!-- It appears inside each item card as the last field (col-span-2)         -->
+        <!-- It is WhatsApp-only and is stripped before the EasyEcom API call        -->
         <div class="card">
           <div class="card-head">
             <div class="card-head-left">

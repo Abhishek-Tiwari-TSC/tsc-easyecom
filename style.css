@@ -119,7 +119,7 @@ body {
 .brand-icon {
   width: 36px;
   height: 36px;
-  background: var(--blue);
+  background: #ffffff;
   border-radius: 9px;
   display: flex;
   align-items: center;
