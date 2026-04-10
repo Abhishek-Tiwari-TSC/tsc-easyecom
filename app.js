@@ -101,23 +101,35 @@ function addItem() {
     '</div>' +
     '<div class="item-body">' +
     '<div class="item-grid">' +
+
     '<div class="field">' +
     '<label class="field-label">EasyEcom SKU <span class="req-star">*</span></label>' +
     '<input type="text" class="field-input item-sku" placeholder="e.g. TSCNPP001_EASY" required>' +
     '<span class="field-hint">Used as Sku, productName and ListingIdentifier</span>' +
     '</div>' +
+
     '<div class="field">' +
     '<label class="field-label">Quantity <span class="req-star">*</span></label>' +
     '<input type="number" class="field-input item-qty" placeholder="1" min="1" required>' +
     '</div>' +
+
     '<div class="field">' +
     '<label class="field-label">Price (Rs.) <span class="req-star">*</span></label>' +
     '<input type="number" class="field-input item-price" placeholder="0.00" step="0.01" required>' +
     '</div>' +
+
     '<div class="field">' +
     '<label class="field-label">Item Discount (Rs.)</label>' +
     '<input type="number" class="field-input item-disc" placeholder="0.00" step="0.01">' +
     '</div>' +
+
+    // ── PRODUCT NAME — WhatsApp only, never sent to EasyEcom ──────────────
+    '<div class="field col-span-2">' +
+    '<label class="field-label">Product Name <span class="req-star">*</span></label>' +
+    '<input type="text" class="field-input item-product-name" placeholder="e.g. Mattress" required>' +
+    '<span class="field-hint"></span>' +
+    '</div>' +
+
     '</div>' +
     '</div>';
   document.getElementById('itemsContainer').appendChild(div);
@@ -175,6 +187,7 @@ function _resetFormFields() {
 // ── BUILD PAYLOAD ─────────────────────────────────────────────────────────────
 // paymentMode is always 1 (Prepaid/Online) as per EasyEcom API.
 // gst_number is optional — only included when filled in.
+// _productName is a WhatsApp-only field — it is stripped before the EasyEcom call in confirmOtp().
 function buildPayload() {
   var g = function (id) {
     var el = document.getElementById(id);
@@ -190,10 +203,13 @@ function buildPayload() {
     var qty = parseInt((card.querySelector('.item-qty') || {}).value || 1);
     var price = parseFloat((card.querySelector('.item-price') || {}).value || 0);
     var disc = parseFloat((card.querySelector('.item-disc') || {}).value || 0);
+    // _productName is WhatsApp-only — stripped before EasyEcom POST in confirmOtp()
+    var productName = ((card.querySelector('.item-product-name') || {}).value || '').trim() || sku;
     return {
       OrderItemId: orderNumber + '_' + (idx + 1),
       Sku: sku,
-      productName: sku,
+      productName: sku,       // EasyEcom still receives SKU as productName
+      _productName: productName, // WhatsApp display name — stripped before EasyEcom call
       Quantity: qty,
       Price: price,
       ListingIdentifier: sku,
@@ -241,7 +257,7 @@ function buildPayload() {
     orderNumber: orderNumber,
     invoiceAmount: g('invoiceAmount'),  // server strips before EasyEcom call
     orderDate: orderDate,
-    paymentMode: 5,                  // Always Prepaid (1 = Online/Prepaid in EasyEcom)
+    paymentMode: 5,
     marketplaceId: mktId,
     items: items,
     customer: [customerObj],
@@ -296,6 +312,7 @@ async function submitCreateOrder(e) {
     var item = payload.items[i];
     if (!item.Sku) { showToast('error', 'Validation Error', 'Item ' + (i + 1) + ': SKU is required.'); return; }
     if (!item.Price) { showToast('error', 'Validation Error', 'Item ' + (i + 1) + ': Price is required.'); return; }
+    if (!item._productName) { showToast('error', 'Validation Error', 'Item ' + (i + 1) + ': Product Name is required.'); return; }
   }
 
   _pendingPayload = payload;
@@ -358,7 +375,12 @@ async function sendOtpCode() {
   var otp = generateOtp();
   storeOtp(otp);
 
+  // SKU summary for "SKU id" field in WhatsApp
   var itemSummary = payload.items.map(function (it) { return it.Sku + ' x' + it.Quantity; }).join(', ');
+
+  // Product name summary for "Product Name" field in WhatsApp — uses _productName (WhatsApp-only)
+  var productNameSummary = payload.items.map(function (it) { return it._productName || it.Sku; }).join(', ');
+
   var amountDisplay = payload.invoiceAmount ? 'Rs. ' + parseFloat(payload.invoiceAmount).toLocaleString('en-IN') : 'N/A';
 
   var sendBtn = document.getElementById('otpSendBtn');
@@ -373,6 +395,7 @@ async function sendOtpCode() {
         name: approver.name,
         orderNumber: payload.orderNumber,
         item: itemSummary,
+        productName: productNameSummary,   // WhatsApp-only field
         amount: amountDisplay,
         otp: otp,
         sendTo: approver.number,
@@ -432,6 +455,14 @@ async function confirmOtp() {
     showToast('error', 'Error', 'Order payload lost. Please try again.');
     return;
   }
+
+  // ── Strip _productName before sending to EasyEcom ─────────────────────────
+  // _productName is WhatsApp-only and must never reach the EasyEcom API.
+  payload.items = payload.items.map(function (it) {
+    var clean = Object.assign({}, it);
+    delete clean._productName;
+    return clean;
+  });
 
   showLoading(true);
 
