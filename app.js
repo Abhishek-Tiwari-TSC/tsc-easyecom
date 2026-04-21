@@ -12,13 +12,15 @@ const CONFIG = {
 const MARKETPLACE_MAP = {
   'Pepperfry': { id: 54 },
   'TataCliq': { id: 948 },
+  'Homelane': { id: 994 },
+  'Influencer': { id: 10 }        // ← Change this when you get the actual Influencer marketplace ID
 };
 
-// Approvers — name shown in cards, number sent to Gupshup
 const APPROVERS = [
   { name: 'Ruta', number: '9730083299' },
   { name: 'Nirav', number: '9619390710' },
   { name: 'Abhishek', number: '9819833605' },
+  { name: 'Rohit', number: '8097287957' },
 ];
 
 let itemCount = 0;
@@ -66,9 +68,15 @@ function onMarketplaceChange(sel) {
 
   var warehouseField = document.getElementById('warehouseField');
   var warehouseSelect = document.getElementById('warehouseName');
-  if (sel.value === 'Pepperfry') {
+
+  // Show warehouse for Pepperfry, Homelane, and Influencer
+  if (sel.value === 'Pepperfry' || sel.value === 'Homelane' || sel.value === 'Influencer') {
     warehouseField.style.display = 'flex';
     warehouseSelect.required = true;
+  } else if (sel.value === 'TataCliq') {
+    // TataCliq uses its own warehouse logic — show but not required, or hide per preference
+    warehouseField.style.display = 'flex';
+    warehouseSelect.required = false;
   } else {
     warehouseField.style.display = 'none';
     warehouseSelect.required = false;
@@ -123,11 +131,11 @@ function addItem() {
     '<input type="number" class="field-input item-disc" placeholder="0.00" step="0.01">' +
     '</div>' +
 
-    // ── PRODUCT NAME — WhatsApp only, never sent to EasyEcom ──────────────
+    // Product Name — WhatsApp only
     '<div class="field col-span-2">' +
     '<label class="field-label">Product Name <span class="req-star">*</span></label>' +
     '<input type="text" class="field-input item-product-name" placeholder="e.g. Mattress" required>' +
-    '<span class="field-hint"></span>' +
+    '<span class="field-hint">Shown only in WhatsApp approval. Not sent to EasyEcom.</span>' +
     '</div>' +
 
     '</div>' +
@@ -185,9 +193,6 @@ function _resetFormFields() {
 }
 
 // ── BUILD PAYLOAD ─────────────────────────────────────────────────────────────
-// paymentMode is always 1 (Prepaid/Online) as per EasyEcom API.
-// gst_number is optional — only included when filled in.
-// _productName is a WhatsApp-only field — it is stripped before the EasyEcom call in confirmOtp().
 function buildPayload() {
   var g = function (id) {
     var el = document.getElementById(id);
@@ -203,13 +208,13 @@ function buildPayload() {
     var qty = parseInt((card.querySelector('.item-qty') || {}).value || 1);
     var price = parseFloat((card.querySelector('.item-price') || {}).value || 0);
     var disc = parseFloat((card.querySelector('.item-disc') || {}).value || 0);
-    // _productName is WhatsApp-only — stripped before EasyEcom POST in confirmOtp()
     var productName = ((card.querySelector('.item-product-name') || {}).value || '').trim() || sku;
+
     return {
       OrderItemId: orderNumber + '_' + (idx + 1),
       Sku: sku,
-      productName: sku,       // EasyEcom still receives SKU as productName
-      _productName: productName, // WhatsApp display name — stripped before EasyEcom call
+      productName: sku,
+      _productName: productName,
       Quantity: qty,
       Price: price,
       ListingIdentifier: sku,
@@ -221,7 +226,6 @@ function buildPayload() {
   var warehouse = g('warehouseName');
   var gstNumber = g('gstNumber');
 
-  // Build customer object — gst_number only added when provided
   var customerObj = {
     billing: {
       name: g('billingName'),
@@ -249,13 +253,12 @@ function buildPayload() {
     },
   };
 
-  // Only attach gst_number if user filled it in
   if (gstNumber) customerObj.gst_number = gstNumber;
 
   var payload = {
     orderType: 'retailorder',
     orderNumber: orderNumber,
-    invoiceAmount: g('invoiceAmount'),  // server strips before EasyEcom call
+    invoiceAmount: g('invoiceAmount'),
     orderDate: orderDate,
     paymentMode: 5,
     marketplaceId: mktId,
@@ -300,8 +303,8 @@ async function submitCreateOrder(e) {
     showToast('error', 'Validation Error', 'Please select a Marketplace.');
     return;
   }
-  if (mktName === 'Pepperfry' && !payload.warehouse) {
-    showToast('error', 'Validation Error', 'Please select a Warehouse for Pepperfry orders.');
+  if ((mktName === 'Pepperfry' || mktName === 'Homelane' || mktName === 'Influencer') && !payload.warehouse) {
+    showToast('error', 'Validation Error', 'Please select a Warehouse for ' + mktName + ' orders.');
     return;
   }
   if (!payload.items.length) {
@@ -333,7 +336,6 @@ function showOtpDialog(orderNumber) {
   sendBtn.textContent = 'Send Code on WhatsApp';
   sendBtn.style.background = '';
 
-  // Reset radio buttons
   document.querySelectorAll('.approver-radio').forEach(function (r) { r.checked = false; });
 
   document.getElementById('otpModal').classList.add('open');
@@ -375,12 +377,8 @@ async function sendOtpCode() {
   var otp = generateOtp();
   storeOtp(otp);
 
-  // SKU summary for "SKU id" field in WhatsApp
   var itemSummary = payload.items.map(function (it) { return it.Sku + ' x' + it.Quantity; }).join(', ');
-
-  // Product name summary for "Product Name" field in WhatsApp — uses _productName (WhatsApp-only)
   var productNameSummary = payload.items.map(function (it) { return it._productName || it.Sku; }).join(', ');
-
   var amountDisplay = payload.invoiceAmount ? 'Rs. ' + parseFloat(payload.invoiceAmount).toLocaleString('en-IN') : 'N/A';
 
   var sendBtn = document.getElementById('otpSendBtn');
@@ -395,7 +393,7 @@ async function sendOtpCode() {
         name: approver.name,
         orderNumber: payload.orderNumber,
         item: itemSummary,
-        productName: productNameSummary,   // WhatsApp-only field
+        productName: productNameSummary,
         amount: amountDisplay,
         otp: otp,
         sendTo: approver.number,
@@ -456,8 +454,7 @@ async function confirmOtp() {
     return;
   }
 
-  // ── Strip _productName before sending to EasyEcom ─────────────────────────
-  // _productName is WhatsApp-only and must never reach the EasyEcom API.
+  // Strip _productName before sending to EasyEcom
   payload.items = payload.items.map(function (it) {
     var clean = Object.assign({}, it);
     delete clean._productName;

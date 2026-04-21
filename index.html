@@ -113,12 +113,14 @@
                   <option value="">Select Marketplace</option>
                   <option value="Pepperfry">Pepperfry</option>
                   <option value="TataCliq">TataCliq</option>
+                  <option value="Homelane">Homelane</option>
+                  <option value="Influencer">Influencer</option>
                 </select>
                 <input type="hidden" id="orderType" value="retailorder">
                 <input type="hidden" id="marketplaceId" value="">
               </div>
 
-              <!-- WAREHOUSE — only shown for Pepperfry -->
+              <!-- WAREHOUSE — shown for Pepperfry, Homelane, Influencer, TataCliq -->
               <div class="field" id="warehouseField" style="display:none;">
                 <label class="field-label">Warehouse <span class="req-star">*</span></label>
                 <select class="field-input field-select" id="warehouseName" onchange="onWarehouseChange(this)">
@@ -149,9 +151,6 @@
         </div>
 
         <!-- ORDER ITEMS -->
-        <!-- Product Name field is injected here dynamically by addItem() in app.js -->
-        <!-- It appears inside each item card as the last field (col-span-2)         -->
-        <!-- It is WhatsApp-only and is stripped before the EasyEcom API call        -->
         <div class="card">
           <div class="card-head">
             <div class="card-head-left">
@@ -187,7 +186,6 @@
                 <input type="email" class="field-input" id="billingEmail" placeholder="customer@email.com">
               </div>
 
-              <!-- GST NUMBER — optional, passed as customer.gst_number -->
               <div class="field">
                 <label class="field-label">GST Number</label>
                 <input type="text" class="field-input" id="gstNumber" placeholder="e.g. 27AAPFU0939F1ZV" maxlength="15" style="text-transform:uppercase;">
@@ -351,18 +349,13 @@
     <span class="footer-sep">·</span>
     <span>TSC EasyEcom Order Management</span>
     <span class="footer-sep">·</span>
-    <span>v2.4</span>
+    <span>v2.5</span>
   </footer>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════════════════════
-     OTP / APPROVAL MODAL
-     Step 1 — Select approver → Send Code → WhatsApp triggered
-     Step 2 — Enter 6-digit code → Confirm & Place Order
-     ══════════════════════════════════════════════════════════════════════════ -->
+<!-- OTP / APPROVAL MODAL -->
 <div class="modal-backdrop" id="otpModal">
   <div class="modal otp-modal">
-
     <div class="modal-header">
       <div class="modal-header-left">
         <div class="modal-icon otp-icon">
@@ -379,14 +372,14 @@
     </div>
 
     <div class="modal-body">
-
-      <!-- STEP 1 -->
       <div class="otp-step-label">
         <span class="otp-step-badge">1</span>
         <span>Select who should approve this order</span>
       </div>
 
       <div class="otp-approver-grid">
+
+        <!-- Approver 0: Ruta -->
         <label class="approver-card" for="approver-0">
           <input type="radio" name="otpApprover" id="approver-0" value="0" class="approver-radio" onchange="document.getElementById('otpApprover').value=this.value">
           <div class="approver-avatar">R</div>
@@ -399,6 +392,7 @@
           </div>
         </label>
 
+        <!-- Approver 1: Nirav -->
         <label class="approver-card" for="approver-1">
           <input type="radio" name="otpApprover" id="approver-1" value="1" class="approver-radio" onchange="document.getElementById('otpApprover').value=this.value">
           <div class="approver-avatar">N</div>
@@ -411,6 +405,7 @@
           </div>
         </label>
 
+        <!-- Approver 2: Abhishek -->
         <label class="approver-card" for="approver-2">
           <input type="radio" name="otpApprover" id="approver-2" value="2" class="approver-radio" onchange="document.getElementById('otpApprover').value=this.value">
           <div class="approver-avatar">A</div>
@@ -422,6 +417,20 @@
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
         </label>
+
+        <!-- Approver 3: Rohit — fixed: unique id="approver-3", value="3" -->
+        <label class="approver-card" for="approver-3">
+          <input type="radio" name="otpApprover" id="approver-3" value="3" class="approver-radio" onchange="document.getElementById('otpApprover').value=this.value">
+          <div class="approver-avatar">RS</div>
+          <div class="approver-info">
+            <span class="approver-name">Rohit</span>
+            <span class="approver-num">+91 80972 87957</span>
+          </div>
+          <div class="approver-check">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </label>
+
       </div>
 
       <input type="hidden" id="otpApprover" value="">
@@ -432,7 +441,6 @@
         Send Code on WhatsApp
       </button>
 
-      <!-- STEP 2 — hidden until code sent -->
       <div id="otpCodeSection" style="display:none;">
         <div class="otp-divider"></div>
         <div class="otp-step-label" style="margin-top:0;">
@@ -441,20 +449,10 @@
         </div>
         <div class="otp-field-wrap">
           <label class="field-label" style="margin-bottom:8px;">Reference Code <span class="req-star">*</span></label>
-          <input
-            type="text"
-            class="field-input otp-input"
-            id="otpInput"
-            placeholder="_ _ _ _ _ _"
-            maxlength="6"
-            inputmode="numeric"
-            autocomplete="one-time-code"
-            onkeydown="otpKeydown(event)"
-          >
+          <input type="text" class="field-input otp-input" id="otpInput" placeholder="_ _ _ _ _ _" maxlength="6" inputmode="numeric" autocomplete="one-time-code" onkeydown="otpKeydown(event)">
           <p class="otp-error" id="otpError"></p>
         </div>
       </div>
-
     </div>
 
     <div class="modal-footer">
@@ -464,11 +462,10 @@
         Confirm &amp; Place Order
       </button>
     </div>
-
   </div>
 </div>
 
-<!-- ── ORDER DETAIL / EDIT MODAL ─────────────────────────────────────────── -->
+<!-- ORDER DETAIL / EDIT MODAL -->
 <div class="modal-backdrop" id="editModal" onclick="handleBackdropClick(event)">
   <div class="modal">
     <div class="modal-header">
@@ -496,7 +493,7 @@
   </div>
 </div>
 
-<!-- ── API RESPONSE MODAL ─────────────────────────────────────────────────── -->
+<!-- API RESPONSE MODAL -->
 <div class="modal-backdrop" id="apiRespModal" onclick="if(event.target===this)closeApiRespModal()">
   <div class="modal api-resp-modal">
     <div class="modal-header">
@@ -526,13 +523,13 @@
   </div>
 </div>
 
-<!-- ── TOAST ──────────────────────────────────────────────────────────────── -->
+<!-- TOAST -->
 <div class="toast-wrap" id="toastWrap">
   <div class="toast" id="toast">
     <div class="toast-icon-wrap" id="toastIconWrap"></div>
     <div class="toast-content">
       <div class="toast-title" id="toastTitle"></div>
-      <div class="toast-body"  id="toastBody"></div>
+      <div class="toast-body" id="toastBody"></div>
     </div>
     <button class="toast-close" onclick="hideToast()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -540,7 +537,7 @@
   </div>
 </div>
 
-<!-- ── LOADING OVERLAY ────────────────────────────────────────────────────── -->
+<!-- LOADING OVERLAY -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-box">
     <div class="loading-ring"></div>
