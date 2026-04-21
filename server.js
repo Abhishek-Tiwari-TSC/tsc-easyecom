@@ -19,7 +19,7 @@ const DEFAULT_JWT = process.env.EASYECOM_JWT || WAREHOUSE_TOKENS['Bhiwandi'];
 const EASYECOM_API_KEY = process.env.EASYECOM_API_KEY || '9150cbbea336c87bfcc5d1aa435957c424762b8d';
 
 // ── WHATSAPP API ──────────────────────────────────────────────────────────────
-const WHATSAPP_API_URL = 'https://ne3hp3hqsj.execute-api.ap-south-1.amazonaws.com/dev';
+const WHATSAPP_API_URL = 'https://ne3hp3hqsj.execute-api.ap-south-1.amazonaws.com/dev/sendwhatsapp';
 
 // All valid approver numbers (Ruta, Nirav, Abhishek, Rohit)
 const APPROVER_NUMBERS = ['9730083299', '9619390710', '9819833605', '8097287957'];
