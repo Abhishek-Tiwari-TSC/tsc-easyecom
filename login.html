@@ -173,13 +173,15 @@ body {
 </div>
 
 <script>
-  const VALID_EMAIL = 'ruta@thesleepcompany.in';
-  const VALID_PASS  = 'Ruta@123';
+  const VALID_USERS = [
+    { email: 'ruta@thesleepcompany.in',         password: 'Ruta@123' },
+    { email: 'rohit.singh@thesleepcompany.in',  password: 'Rohit@123' },
+  ];
 
   document.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
 
   function handleLogin() {
-    const email = document.getElementById('emailInput').value.trim();
+    const email = document.getElementById('emailInput').value.trim().toLowerCase();
     const pass  = document.getElementById('passwordInput').value;
     const btn   = document.getElementById('loginBtn');
     const err   = document.getElementById('errorMsg');
@@ -188,7 +190,8 @@ body {
     btn.classList.add('loading');
 
     setTimeout(() => {
-      if (email === VALID_EMAIL && pass === VALID_PASS) {
+      const match = VALID_USERS.find(u => u.email === email && u.password === pass);
+      if (match) {
         sessionStorage.setItem('tsc_auth', 'true');
         sessionStorage.setItem('tsc_user', email);
         window.location.href = 'index.html';
