@@ -17,12 +17,10 @@ const WAREHOUSE_TOKENS = {
 
 const DEFAULT_JWT = process.env.EASYECOM_JWT || WAREHOUSE_TOKENS['Bhiwandi'];
 const EASYECOM_API_KEY = process.env.EASYECOM_API_KEY || '9150cbbea336c87bfcc5d1aa435957c424762b8d';
+const GUPSHUP_USERID = '2000197692';
+const GUPSHUP_PASSWORD = '9LzraftQ';
 
-// ── WHATSAPP API ──────────────────────────────────────────────────────────────
-const WHATSAPP_API_URL = 'https://ne3hp3hqsj.execute-api.ap-south-1.amazonaws.com/dev/sendwhatsapp';
-
-// All valid approver numbers (Ruta, Nirav, Abhishek, Rohit)
-const APPROVER_NUMBERS = ['9730083299', '9619390710', '9819833605', '8097287957'];
+const APPROVER_NUMBERS = ['9730083299', '9619390710', '9819833605'];
 
 const EASYECOM_WEBHOOK = 'https://api.easyecom.io/webhook/v2';
 const EASYECOM_ORDERS = 'https://api.easyecom.io/orders/V2';
@@ -82,15 +80,7 @@ app.post('/api/sendOtp', async (req, res) => {
     `*Reference Code:* ${otp}\n\n` +
     `Please review the order details`;
 
-  // Build URL with query params for new WhatsApp API endpoint
-  const params = new URLSearchParams({
-    send_to: sendTo,
-    msg: message,
-    msg_type: 'TEXT',
-    method: 'SENDMESSAGE',
-  });
-
-  const url = `${WHATSAPP_API_URL}?${params.toString()}`;
+  const url = `https://mediaapi.smsgupshup.com/GatewayAPI/rest?userid=${GUPSHUP_USERID}&password=${GUPSHUP_PASSWORD}&send_to=${sendTo}&v=1.1&format=json&msg_type=TEXT&method=SENDMESSAGE&msg=${encodeURIComponent(message)}`;
 
   console.log(`[${new Date().toISOString()}] SEND OTP -> order: ${orderNumber} | to: ${sendTo} (${name}) | product: ${productName}`);
 
@@ -101,7 +91,7 @@ app.post('/api/sendOtp', async (req, res) => {
     try { data = JSON.parse(text); } catch (_) { data = { raw: text }; }
 
     if (!response.ok) {
-      return res.status(502).json({ success: false, message: 'WhatsApp API failed', raw: data });
+      return res.status(502).json({ success: false, message: 'Gupshup failed', raw: data });
     }
 
     res.json({ success: true, message: 'OTP sent via WhatsApp.', data });
@@ -149,7 +139,7 @@ app.post('/api/createOrder', async (req, res) => {
   }
 });
 
-// ── GET ALL ORDERS ────────────────────────────────────────────────────────────
+// ── GET ALL ORDERS (Improved error handling) ─────────────────────────────────
 app.get('/api/getAllOrders', async (req, res) => {
   console.log(`[${new Date().toISOString()}] GET ALL ORDERS started`);
 
@@ -228,8 +218,8 @@ function writeOrders(orders) {
   fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
 }
 
-app.post('/api/orders', (req, res) => { /* existing code */ });
-app.get('/api/orders', (req, res) => { /* existing code */ });
+app.post('/api/orders', (req, res) => { /* ... existing code ... */ });
+app.get('/api/orders', (req, res) => { /* ... existing code ... */ });
 
 // ── SERVE FRONTEND ────────────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname)));
@@ -244,7 +234,6 @@ app.listen(PORT, () => {
   console.log(`\n🚀 TSC EasyEcom Server running on http://localhost:${PORT}`);
   console.log(`Warehouses configured: ${Object.keys(WAREHOUSE_TOKENS).join(', ')}`);
   console.log(`API Key used: ${EASYECOM_API_KEY.slice(0, 8)}...`);
-  console.log(`WhatsApp API: ${WHATSAPP_API_URL}`);
   console.log(`\n🌐 Open the app in your browser:`);
   console.log(`   → http://localhost:${PORT}/index.html`);
   console.log(`\n✅ API endpoints:`);
