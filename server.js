@@ -20,7 +20,8 @@ const EASYECOM_API_KEY = process.env.EASYECOM_API_KEY || '9150cbbea336c87bfcc5d1
 const GUPSHUP_USERID = '2000197692';
 const GUPSHUP_PASSWORD = '9LzraftQ';
 
-const APPROVER_NUMBERS = ['9730083299', '9619390710', '9819833605'];
+// ── FIX: Added Rohit's number (8097287957) to the whitelist ──────────────────
+const APPROVER_NUMBERS = ['9730083299', '9619390710', '9819833605', '8097287957'];
 
 const EASYECOM_WEBHOOK = 'https://api.easyecom.io/webhook/v2';
 const EASYECOM_ORDERS = 'https://api.easyecom.io/orders/V2';
